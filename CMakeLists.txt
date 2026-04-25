@@ -37,3 +37,4 @@ target_include_directories(nicx PRIVATE
 )
 
 install(TARGETS nicx DESTINATION bin)
+install(FILES docs/nicx.1 DESTINATION share/man/man1)

@@ -1,0 +1,157 @@
+.TH NICX 1 "2025-04-25" "nicx 0.1.0" "User Commands"
+.
+.SH NAME
+nicx \- personal Linux system toolkit by Nicolas
+.
+.SH SYNOPSIS
+.B nicx
+.RI [ command ]
+.RI [ subcommand ]
+.RI [ options ]
+.
+.SH DESCRIPTION
+.B nicx
+is a personal Linux system toolkit designed for use on minimal or fresh Linux
+installations. It provides a unified CLI for system inspection, configuration
+management, and Linux administration tasks.
+.PP
+The tool is self-contained, requires no runtime dependencies beyond the C++
+standard library, and stores its configuration in
+.I ~/.config/nicx/config.toml
+following the XDG Base Directory specification.
+.
+.SH COMMANDS
+.TP
+.B system
+Inspect the current system. Default subcommand is
+.BR info .
+.TP
+.B help
+Show general help, or help for a specific command when given as an argument.
+.TP
+.B version
+Print the version string and exit.
+.
+.SH SYSTEM SUBCOMMANDS
+.TP
+.B nicx system info
+Display a full system overview including:
+.RS
+.IP \(bu 3
+Operating system name, ID, version, kernel, hostname, and init system
+.IP \(bu
+CPU model, architecture, core count, and thread count
+.IP \(bu
+Memory total, used, available, and swap usage
+.IP \(bu
+Boot mode (EFI/BIOS), bootloader detection (GRUB, systemd-boot, rEFInd)
+.IP \(bu
+Disk partitions with filesystem, usage, and LUKS encryption status
+.RE
+.
+.SH OPTIONS
+.TP
+.B \-h, \-\-help
+Print help information and exit.
+.TP
+.B \-v, \-\-version
+Print the version number and exit.
+.TP
+.B \-\-no\-color
+Disable ANSI color output (also respected when stdout is not a TTY).
+.
+.SH CONFIGURATION
+.B nicx
+reads its configuration from
+.I ~/.config/nicx/config.toml
+(or
+.I $XDG_CONFIG_HOME/nicx/config.toml
+if the XDG variable is set). The file is created with defaults on first run.
+.PP
+.B Example config.toml:
+.PP
+.RS
+.nf
+[output]
+color = true
+# format = terminal
+
+[system]
+# show_swap = true
+.fi
+.RE
+.
+.SH FILES
+.TP
+.I ~/.config/nicx/config.toml
+User configuration file.
+.TP
+.I ~/.local/bin/nicx
+Default install location when using the install script.
+.TP
+.I /usr/local/bin/nicx
+System-wide install location when using
+.BR "make install" .
+.
+.SH INSTALLATION
+Install system-wide from source:
+.PP
+.RS
+.nf
+git clone https://github.com/microservice-tech-nicolas/nicx
+cd nicx
+make install
+.fi
+.RE
+.PP
+Or install to
+.I ~/.local/bin
+without root:
+.PP
+.RS
+.nf
+make install PREFIX=~/.local
+.fi
+.RE
+.PP
+Or use the one-line installer:
+.PP
+.RS
+.nf
+curl -fsSL https://raw.githubusercontent.com/microservice-tech-nicolas/nicx/main/scripts/install.sh | sh
+.fi
+.RE
+.
+.SH EXAMPLES
+.TP
+Show full system information:
+.B nicx system info
+.TP
+Show help for the system command:
+.B nicx help system
+.TP
+Show version:
+.B nicx --version
+.
+.SH EXTENDING
+.B nicx
+uses a self-registering command pattern. Adding a new command requires only
+creating a new translation unit with a static
+.B CommandRegistrar
+— no changes to existing infrastructure. See the project README on GitHub for
+the developer guide.
+.
+.SH BUGS
+Report bugs at:
+.I https://github.com/microservice-tech-nicolas/nicx/issues
+.
+.SH AUTHOR
+Nicolas
+.RI < https://github.com/microservice-tech-nicolas >
+.
+.SH SEE ALSO
+.BR uname (1),
+.BR lsblk (8),
+.BR free (1),
+.BR df (1),
+.BR systemctl (1)
