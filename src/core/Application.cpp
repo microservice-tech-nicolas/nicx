@@ -70,13 +70,17 @@ int Application::run() {
 
     if (first == "-h" || first == "--help" || first == "help") {
         if (args.size() > 1) {
-            // "nicx help <command>"
+            // "nicx help <command>" — banner + command help
             auto cmd = CommandRegistry::instance().create(args[1]);
-            if (cmd) { cmd->printHelp(); return 0; }
+            if (cmd) {
+                printBanner();
+                cmd->printHelp();
+                return 0;
+            }
             std::cerr << "Unknown command: " << args[1] << "\n";
             return 1;
         }
-        printHelp();
+        printHelp(); // includes banner
         return 0;
     }
 
@@ -84,6 +88,9 @@ int Application::run() {
         printVersion();
         return 0;
     }
+
+    // All commands: print compact banner first
+    printBanner();
 
     auto cmd = CommandRegistry::instance().create(first);
     if (!cmd) {

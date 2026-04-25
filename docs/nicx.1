@@ -30,6 +30,15 @@ Inspect the current system. Default subcommand is
 Package management with install tracking. Detects the system package manager
 automatically (yay, pacman, dnf, apt, zypper).
 .TP
+.B git
+Git and GitHub CLI setup, authentication, and repository tracking.
+.TP
+.B gpg
+GPG key management: generation, listing, status, export, and import.
+.TP
+.B pass
+password-store setup and management with GPG and optional git remote sync.
+.TP
 .B help
 Show general help, or help for a specific command when given as an argument.
 .TP
@@ -82,6 +91,89 @@ nicx pkg sync
 .fi
 .RE
 .
+.SH GIT SUBCOMMANDS
+.TP
+.B nicx git setup
+Check that git and gh (GitHub CLI) are installed, verify git identity (user.name,
+user.email), confirm gh authentication, and display the configured development directory.
+.TP
+.B nicx git auth
+Run
+.B gh auth login
+interactively, then configure git to use the gh credential helper.
+.TP
+.B nicx git status
+Show git version, identity, GPG signing status, gh authentication, and tracked repo count.
+.TP
+.B nicx git add \fIurl\fR
+Track a repository by URL (SSH or HTTPS). Parses org and name from the URL and
+saves the entry to
+.IR ~/.config/nicx/repos.toml .
+.TP
+.B nicx git remove \fIname\fR
+Remove a repository from the tracking list.
+.TP
+.B nicx git list
+List all tracked repositories with their org, URL, and local path.
+.TP
+.B nicx git clone \fIname\fR
+Clone a tracked repository into
+.IR devDir/org/name .
+If the directory already exists, runs
+.B git pull
+instead.
+.TP
+.B nicx git clone-all
+Clone all tracked repositories not yet present locally.
+.PP
+The development directory defaults to
+.I ~/Development
+and can be overridden in config.toml with
+.IR git.dev_dir .
+.
+.SH GPG SUBCOMMANDS
+.TP
+.B nicx gpg setup
+Check that gpg is installed. If no secret key is found, prints instructions
+for generating one with
+.BR "gpg --full-generate-key" .
+.TP
+.B nicx gpg list
+List all available GPG secret keys in long keyid format.
+.TP
+.B nicx gpg status
+Show GPG installation status, git signing key, commit.gpgsign setting,
+and the GPG id configured in the pass store.
+.TP
+.B nicx gpg export \fIkey-id\fR
+Export the specified public key in ASCII-armored format to stdout.
+.TP
+.B nicx gpg import \fIfile\fR
+Import a GPG key from the given file.
+.
+.SH PASS SUBCOMMANDS
+.TP
+.B nicx pass setup
+Install pass and gpg if missing, initialise the password store with the
+configured GPG key, and optionally initialise a git repository inside the store.
+.TP
+.B nicx pass status
+Show whether pass is installed, the store directory, configured GPG id,
+git remote, and number of stored passwords.
+.TP
+.B nicx pass pull
+Pull the latest commits from the git remote configured inside the password store.
+.TP
+.B nicx pass push
+Push local commits in the password store to its git remote.
+.PP
+The GPG key used for the store can be set in config.toml as
+.IR pass.gpg_key_id .
+The store directory defaults to
+.I ~/.password-store
+and can be overridden with
+.IR pass.store_dir .
+.
 .SH OPTIONS
 .TP
 .B \-h, \-\-help
@@ -111,13 +203,29 @@ color = true
 
 [system]
 # show_swap = true
+
+[git]
+# dev_dir = ~/Development
+# gh_user =
+
+[pass]
+# gpg_key_id =
+# store_dir = ~/.password-store
 .fi
 .RE
 .
 .SH FILES
 .TP
 .I ~/.config/nicx/config.toml
-User configuration file.
+User configuration file (created with defaults on first run).
+.TP
+.I ~/.config/nicx/packages.toml
+Tracked package list, written by
+.BR "nicx pkg install" .
+.TP
+.I ~/.config/nicx/repos.toml
+Tracked repository list, written by
+.BR "nicx git add" .
 .TP
 .I ~/.local/bin/nicx
 Default install location when using the install script.
@@ -187,4 +295,8 @@ Nicolas
 .BR lsblk (8),
 .BR free (1),
 .BR df (1),
-.BR systemctl (1)
+.BR systemctl (1),
+.BR git (1),
+.BR gh (1),
+.BR gpg (1),
+.BR pass (1)

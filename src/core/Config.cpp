@@ -42,7 +42,13 @@ void Config::writeDefaults() const {
       << "color = true\n"
       << "# format = terminal  # terminal | plain | json\n\n"
       << "[system]\n"
-      << "# show_swap = true\n";
+      << "# show_swap = true\n\n"
+      << "[git]\n"
+      << "# dev_dir = ~/Development\n"
+      << "# gh_user =\n\n"
+      << "[pass]\n"
+      << "# gpg_key_id =\n"
+      << "# store_dir = ~/.password-store\n";
 }
 
 void Config::load() {
