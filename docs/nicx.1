@@ -1,4 +1,4 @@
-.TH NICX 1 "2025-04-25" "nicx 0.1.0" "User Commands"
+.TH NICX 1 "2026-04-26" "nicx 0.1.0" "User Commands"
 .
 .SH NAME
 nicx \- personal Linux system toolkit by Nicolas
@@ -7,13 +7,14 @@ nicx \- personal Linux system toolkit by Nicolas
 .B nicx
 .RI [ command ]
 .RI [ subcommand ]
-.RI [ options ]
+.RI [ args ]
 .
 .SH DESCRIPTION
 .B nicx
 is a personal Linux system toolkit designed for use on minimal or fresh Linux
-installations. It provides a unified CLI for system inspection, configuration
-management, and Linux administration tasks.
+installations. It provides a unified CLI for system inspection, package
+management, git/GitHub setup, GPG key management, and password-store
+administration.
 .PP
 The tool is self-contained, requires no runtime dependencies beyond the C++
 standard library, and stores its configuration in
@@ -34,10 +35,12 @@ automatically (yay, pacman, dnf, apt, zypper).
 Git and GitHub CLI setup, authentication, and repository tracking.
 .TP
 .B gpg
-GPG key management: generation, listing, status, export, and import.
+GPG key management: installation check, key generation guidance, listing,
+status, export, and import.
 .TP
 .B pass
-password-store setup and management with GPG and optional git remote sync.
+password-store setup and management with GPG encryption and optional git
+remote synchronisation.
 .TP
 .B help
 Show general help, or help for a specific command when given as an argument.
@@ -73,7 +76,10 @@ to the tracking list in
 Uninstall packages and remove them from the tracking list.
 .TP
 .B nicx pkg update
-Update all system packages (equivalent to \fIdnf upgrade\fR, \fIpacman -Syu\fR, etc.).
+Update all system packages (equivalent to
+.IR "dnf upgrade" ,
+.IR "pacman -Syu" ,
+etc.).
 .TP
 .B nicx pkg search \fIterm\fR
 Search available packages in the configured repositories.
@@ -82,71 +88,90 @@ Search available packages in the configured repositories.
 Display all tracked packages with their package manager and install method.
 .TP
 .B nicx pkg sync
-Install all packages in the tracking list that are not yet present.
-Use this on a fresh system to restore your environment:
+Install all packages in the tracking list that are not yet present on the
+system. Use this on a fresh machine to restore your full environment:
 .PP
 .RS
 .nf
 nicx pkg sync
 .fi
 .RE
+.PP
+Packages are stored in
+.I ~/.config/nicx/packages.toml
+and are portable across machines and distributions.
 .
 .SH GIT SUBCOMMANDS
 .TP
 .B nicx git setup
-Check that git and gh (GitHub CLI) are installed, verify git identity (user.name,
-user.email), confirm gh authentication, and display the configured development directory.
+Check that git and gh (GitHub CLI) are installed, verify git identity
+(user.name, user.email), confirm gh authentication status, and display the
+configured development directory.
 .TP
 .B nicx git auth
 Run
 .B gh auth login
-interactively, then configure git to use the gh credential helper.
+interactively, then configure git to use the gh credential helper via
+.BR "gh auth setup-git" .
 .TP
 .B nicx git status
-Show git version, identity, GPG signing status, gh authentication, and tracked repo count.
+Show git version, identity, GPG commit-signing status, gh authentication,
+authenticated username, protocol, tracked repo count, and dev directory.
 .TP
-.B nicx git add \fIurl\fR
-Track a repository by URL (SSH or HTTPS). Parses org and name from the URL and
-saves the entry to
+.B nicx git add \fIurl\fR [\fIname\fR] [\fIorg\fR]
+Track a repository by URL (SSH or HTTPS). The org and name are automatically
+parsed from the URL; pass optional
+.I name
+and
+.I org
+arguments to override them. The entry is saved to
 .IR ~/.config/nicx/repos.toml .
 .TP
 .B nicx git remove \fIname\fR
-Remove a repository from the tracking list.
+Remove a repository from the tracking list. Does not delete the local
+directory.
 .TP
 .B nicx git list
-List all tracked repositories with their org, URL, and local path.
+List all tracked repositories with their org, URL, local clone path, and
+whether the directory already exists.
 .TP
 .B nicx git clone \fIname\fR
 Clone a tracked repository into
 .IR devDir/org/name .
-If the directory already exists, runs
+If the local directory already exists, runs
 .B git pull
 instead.
 .TP
 .B nicx git clone-all
-Clone all tracked repositories not yet present locally.
+Clone all tracked repositories not yet present locally. Repositories that
+already exist are skipped silently.
 .PP
 The development directory defaults to
 .I ~/Development
 and can be overridden in config.toml with
 .IR git.dev_dir .
+Repository metadata is stored in
+.IR ~/.config/nicx/repos.toml .
 .
 .SH GPG SUBCOMMANDS
 .TP
 .B nicx gpg setup
-Check that gpg is installed. If no secret key is found, prints instructions
-for generating one with
+Check that gpg is installed. If no secret key is found, prints step-by-step
+instructions for generating one with
 .BR "gpg --full-generate-key" .
 .TP
 .B nicx gpg list
-List all available GPG secret keys in long keyid format.
+List all available GPG secret keys in long keyid format, including fingerprint
+and uid.
 .TP
 .B nicx gpg status
-Show GPG installation status, git signing key, commit.gpgsign setting,
-and the GPG id configured in the pass store.
+Show GPG installation status, the git signing key (user.signingkey),
+commit.gpgsign setting, the GPG id configured in the pass store, and total
+secret key count.
 .TP
 .B nicx gpg export \fIkey-id\fR
-Export the specified public key in ASCII-armored format to stdout.
+Export the specified public key in ASCII-armored PEM format to stdout. Pipe
+to a file or clipboard as needed.
 .TP
 .B nicx gpg import \fIfile\fR
 Import a GPG key from the given file.
@@ -154,21 +179,33 @@ Import a GPG key from the given file.
 .SH PASS SUBCOMMANDS
 .TP
 .B nicx pass setup
-Install pass and gpg if missing, initialise the password store with the
-configured GPG key, and optionally initialise a git repository inside the store.
+Verify that pass and gpg are installed, resolve the GPG key to use (from
+config or from the first available secret key), and initialise the password
+store with
+.BR "pass init" .
+If the store is already initialised the command reports the current gpg-id
+and exits cleanly without modifying the store. Also initialises a git
+repository inside the store if git is available.
 .TP
 .B nicx pass status
-Show whether pass is installed, the store directory, configured GPG id,
-git remote, and number of stored passwords.
+Show whether pass is installed, the store directory, the configured GPG id,
+the git remote URL, the date of the last git commit, and the number of stored
+passwords.
 .TP
 .B nicx pass pull
-Pull the latest commits from the git remote configured inside the password store.
+Pull the latest commits from the git remote configured inside the password
+store using
+.BR "pass git pull --rebase" .
 .TP
 .B nicx pass push
-Push local commits in the password store to its git remote.
+Push local commits in the password store to its git remote using
+.BR "pass git push" .
 .PP
 The GPG key used for the store can be set in config.toml as
 .IR pass.gpg_key_id .
+If unset,
+.B nicx
+falls back to the first available GPG secret key.
 The store directory defaults to
 .I ~/.password-store
 and can be overridden with
@@ -181,9 +218,6 @@ Print help information and exit.
 .TP
 .B \-v, \-\-version
 Print the version number and exit.
-.TP
-.B \-\-no\-color
-Disable ANSI color output (also respected when stdout is not a TTY).
 .
 .SH CONFIGURATION
 .B nicx
@@ -191,7 +225,10 @@ reads its configuration from
 .I ~/.config/nicx/config.toml
 (or
 .I $XDG_CONFIG_HOME/nicx/config.toml
-if the XDG variable is set). The file is created with defaults on first run.
+if the XDG variable is set). The file is created with sensible defaults on
+first run and can be edited freely while
+.B nicx
+is not running.
 .PP
 .B Example config.toml:
 .PP
@@ -199,17 +236,16 @@ if the XDG variable is set). The file is created with defaults on first run.
 .nf
 [output]
 color = true
-# format = terminal
 
 [system]
 # show_swap = true
 
 [git]
-# dev_dir = ~/Development
-# gh_user =
+dev_dir = ~/Development
+# gh_user = myusername
 
 [pass]
-# gpg_key_id =
+# gpg_key_id = 6BE764C6C37DEB87
 # store_dir = ~/.password-store
 .fi
 .RE
@@ -217,70 +253,110 @@ color = true
 .SH FILES
 .TP
 .I ~/.config/nicx/config.toml
-User configuration file (created with defaults on first run).
+Main configuration file (created with defaults on first run).
 .TP
 .I ~/.config/nicx/packages.toml
-Tracked package list, written by
-.BR "nicx pkg install" .
+Tracked package list. Written by
+.BR "nicx pkg install" ,
+read by
+.BR "nicx pkg sync" .
 .TP
 .I ~/.config/nicx/repos.toml
-Tracked repository list, written by
-.BR "nicx git add" .
+Tracked repository list. Written by
+.BR "nicx git add" ,
+read by
+.BR "nicx git clone-all" .
 .TP
 .I ~/.local/bin/nicx
-Default install location when using the install script.
+Default install location when using
+.B make install-user
+or the install script.
 .TP
 .I /usr/local/bin/nicx
 System-wide install location when using
-.BR "make install" .
+.B make install
+(requires root).
+.TP
+.I ~/.local/share/man/man1/nicx.1
+Man page installed by
+.BR "make install-user" .
 .
 .SH INSTALLATION
-Install system-wide from source:
+Build and install to
+.I ~/.local/bin
+(no root required):
 .PP
 .RS
 .nf
 git clone https://github.com/microservice-tech-nicolas/nicx
 cd nicx
-make install
+make install-user
 .fi
 .RE
 .PP
-Or install to
-.I ~/.local/bin
-without root:
+Build and install system-wide:
 .PP
 .RS
 .nf
-make install PREFIX=~/.local
+sudo make install
 .fi
 .RE
 .PP
-Or use the one-line installer:
+One-line installer (detects dnf, apt, pacman, zypper):
 .PP
 .RS
 .nf
 curl -fsSL https://raw.githubusercontent.com/microservice-tech-nicolas/nicx/main/scripts/install.sh | sh
 .fi
 .RE
+.PP
+After installation, ensure
+.I ~/.local/bin
+is in your PATH if using the user install.
 .
 .SH EXAMPLES
 .TP
 Show full system information:
 .B nicx system info
 .TP
-Show help for the system command:
-.B nicx help system
+Install and track packages:
+.B nicx pkg install neovim tmux fzf ripgrep
 .TP
-Show version:
-.B nicx --version
+Restore packages on a fresh machine:
+.B nicx pkg sync
+.TP
+Set up git and GitHub CLI:
+.B nicx git setup
+.TP
+Track and clone a repository:
+.B nicx git add git@github.com:microservice-tech-nicolas/nicx.git
+.br
+.B nicx git clone nicx
+.TP
+Clone all tracked repositories:
+.B nicx git clone-all
+.TP
+Check GPG key status:
+.B nicx gpg status
+.TP
+Set up the password store:
+.B nicx pass setup
+.TP
+Sync the password store with its git remote:
+.B nicx pass pull
+.br
+.B nicx pass push
+.TP
+Get help for a specific command:
+.B nicx help git
 .
 .SH EXTENDING
 .B nicx
-uses a self-registering command pattern. Adding a new command requires only
-creating a new translation unit with a static
-.B CommandRegistrar
-— no changes to existing infrastructure. See the project README on GitHub for
-the developer guide.
+uses a self-registering command pattern (OCP). Adding a new command requires
+only creating a new translation unit with a static
+.B core::CommandRegistrar
+— no changes to any existing file are needed. See the project source on
+GitHub for the developer guide.
 .
 .SH BUGS
 Report bugs at:
