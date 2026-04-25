@@ -27,6 +27,8 @@ file(GLOB_RECURSE SOURCES
   src/output/*.cpp
   src/system/*.cpp
   src/commands/*.cpp
+  src/pkg/*.cpp
+  src/pkg/managers/*.cpp
 )
 
 add_executable(nicx src/main.cpp ${SOURCES})

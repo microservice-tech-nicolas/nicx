@@ -26,6 +26,10 @@ following the XDG Base Directory specification.
 Inspect the current system. Default subcommand is
 .BR info .
 .TP
+.B pkg
+Package management with install tracking. Detects the system package manager
+automatically (yay, pacman, dnf, apt, zypper).
+.TP
 .B help
 Show general help, or help for a specific command when given as an argument.
 .TP
@@ -47,6 +51,35 @@ Memory total, used, available, and swap usage
 Boot mode (EFI/BIOS), bootloader detection (GRUB, systemd-boot, rEFInd)
 .IP \(bu
 Disk partitions with filesystem, usage, and LUKS encryption status
+.RE
+.
+.SH PKG SUBCOMMANDS
+.TP
+.B nicx pkg install \fIname\fR [\fIname\fR...]
+Install one or more packages via the detected package manager, then save them
+to the tracking list in
+.IR ~/.config/nicx/packages.toml .
+.TP
+.B nicx pkg remove \fIname\fR [\fIname\fR...]
+Uninstall packages and remove them from the tracking list.
+.TP
+.B nicx pkg update
+Update all system packages (equivalent to \fIdnf upgrade\fR, \fIpacman -Syu\fR, etc.).
+.TP
+.B nicx pkg search \fIterm\fR
+Search available packages in the configured repositories.
+.TP
+.B nicx pkg list
+Display all tracked packages with their package manager and install method.
+.TP
+.B nicx pkg sync
+Install all packages in the tracking list that are not yet present.
+Use this on a fresh system to restore your environment:
+.PP
+.RS
+.nf
+nicx pkg sync
+.fi
 .RE
 .
 .SH OPTIONS

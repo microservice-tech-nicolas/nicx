@@ -85,4 +85,28 @@ void TerminalRenderer::success(std::string_view text) {
     std::cout << colorize("  ✓  ", ansi::GREEN) << text << "\n";
 }
 
+void TerminalRenderer::pkg(std::string_view name, std::string_view version,
+                           std::string_view description, bool installed) {
+    std::string indicator = installed
+        ? colorize(" [installed]", ansi::GREEN)
+        : "";
+    std::cout << "  " << colorize(std::string(name), std::string(ansi::BOLD) + ansi::WHITE);
+    if (!version.empty())
+        std::cout << " " << colorize(std::string(version), ansi::CYAN);
+    std::cout << indicator << "\n";
+    if (!description.empty())
+        std::cout << "  " << colorize("    " + std::string(description), ansi::GRAY) << "\n";
+}
+
+void TerminalRenderer::trackedPkg(std::string_view name, std::string_view pm,
+                                  std::string_view method, std::string_view notes) {
+    std::cout << "  " << colorize(std::string(name), std::string(ansi::BOLD) + ansi::WHITE)
+              << "  " << colorize("via " + std::string(pm), ansi::CYAN);
+    if (method == "manual")
+        std::cout << colorize(" (manual)", ansi::YELLOW);
+    if (!notes.empty())
+        std::cout << colorize("  # " + std::string(notes), ansi::GRAY);
+    std::cout << "\n";
+}
+
 } // namespace nicx::output

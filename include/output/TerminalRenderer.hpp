@@ -19,6 +19,10 @@ public:
     void error(std::string_view text) override;
     void success(std::string_view text) override;
     void rule() override;
+    void pkg(std::string_view name, std::string_view version,
+             std::string_view description, bool installed) override;
+    void trackedPkg(std::string_view name, std::string_view pm,
+                    std::string_view method, std::string_view notes) override;
 
 private:
     bool m_color;

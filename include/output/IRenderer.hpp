@@ -21,6 +21,12 @@ public:
     virtual void error(std::string_view text) = 0;
     virtual void success(std::string_view text) = 0;
     virtual void rule() = 0;
+
+    // Package-specific output
+    virtual void pkg(std::string_view name, std::string_view version,
+                     std::string_view description, bool installed) = 0;
+    virtual void trackedPkg(std::string_view name, std::string_view pm,
+                            std::string_view method, std::string_view notes) = 0;
 };
 
 } // namespace nicx::output
