@@ -43,6 +43,7 @@ echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc && source ~/.zshrc
 | `nicx git <sub>` | Git + GitHub CLI setup, repo tracking |
 | `nicx gpg <sub>` | GPG key management |
 | `nicx pass <sub>` | password-store setup and sync |
+| `nicx cron <sub>` | Managed cron scripts and crontab installation |
 
 ---
 
@@ -74,6 +75,15 @@ nicx gpg status
 # Set up password-store
 nicx pass setup
 nicx pass status
+```
+
+---
+
+```sh
+# Set up cron scripts
+nicx cron setup
+nicx cron edit daily
+nicx cron status
 ```
 
 ---
@@ -123,6 +133,19 @@ status             Store dir, gpg-id, git remote, last sync, password count
 pull               Pull latest from git remote
 push               Push to git remote
 ```
+
+### `nicx cron`
+```
+setup              Create stub scripts + install user crontab entries
+status             Show scripts and installed crontab entries
+edit <interval>    Open a script in $EDITOR
+uninstall          Remove nicx crontab entries (scripts are kept)
+```
+
+Intervals: `minutely` `hourly` `daily` `weekly` `monthly` `yearly`
+
+Scripts live in `~/.config/nicx/cron/` — edit them freely.
+Logs go to `~/.config/nicx/cron/<interval>.log`.
 
 ---
 

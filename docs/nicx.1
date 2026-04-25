@@ -42,6 +42,10 @@ status, export, and import.
 password-store setup and management with GPG encryption and optional git
 remote synchronisation.
 .TP
+.B cron
+Managed cron scripts and crontab installation. Creates per-interval stub
+scripts and installs the corresponding user crontab entries.
+.TP
 .B help
 Show general help, or help for a specific command when given as an argument.
 .TP
@@ -211,6 +215,57 @@ The store directory defaults to
 and can be overridden with
 .IR pass.store_dir .
 .
+.SH CRON SUBCOMMANDS
+.TP
+.B nicx cron setup
+Create the cron script directory at
+.IR ~/.config/nicx/cron/
+and generate stub shell scripts for each interval (minutely, hourly, daily,
+weekly, monthly, yearly) if they do not already exist. Existing scripts are
+never overwritten. Installs the corresponding entries into the user crontab,
+replacing any previously installed nicx block. Each script logs its output to
+.IR ~/.config/nicx/cron/<interval>.log .
+.TP
+.B nicx cron status
+Show whether
+.B crontab
+is available, list each script with its full path, and print the currently
+installed nicx crontab entries.
+.TP
+.B nicx cron edit \fIinterval\fR
+Open the script for the given interval in
+.B $VISUAL
+or
+.B $EDITOR
+(falls back to
+.BR vi ).
+Valid intervals:
+.BR minutely ,
+.BR hourly ,
+.BR daily ,
+.BR weekly ,
+.BR monthly ,
+.BR yearly .
+.TP
+.B nicx cron uninstall
+Remove all nicx-managed entries from the user crontab. The script files in
+.I ~/.config/nicx/cron/
+are kept intact.
+.PP
+Cron schedules installed by
+.BR "nicx cron setup" :
+.PP
+.RS
+.nf
+minutely   * * * * *      every minute
+hourly     0 * * * *      top of every hour
+daily      0 0 * * *      midnight every day
+weekly     0 0 * * 0      midnight every Sunday
+monthly    0 0 1 * *      midnight 1st of month
+yearly     0 0 1 1 *      midnight 1st January
+.fi
+.RE
+.
 .SH OPTIONS
 .TP
 .B \-h, \-\-help
@@ -266,6 +321,9 @@ Tracked repository list. Written by
 .BR "nicx git add" ,
 read by
 .BR "nicx git clone-all" .
+.TP
+.I ~/.config/nicx/cron/
+Directory containing the six managed cron scripts and their log files.
 .TP
 .I ~/.local/bin/nicx
 Default install location when using
@@ -346,6 +404,13 @@ Sync the password store with its git remote:
 .B nicx pass pull
 .br
 .B nicx pass push
+.TP
+Set up and manage cron scripts:
+.B nicx cron setup
+.br
+.B nicx cron edit daily
+.br
+.B nicx cron status
 .TP
 Get help for a specific command:
 .B nicx help git
