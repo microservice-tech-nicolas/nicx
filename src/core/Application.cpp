@@ -100,7 +100,9 @@ int Application::run() {
     }
 
     std::span<const std::string_view> rest(args.data() + 1, args.size() - 1);
-    return cmd->execute(rest);
+    const int rc = cmd->execute(rest);
+    std::cout << "\n";
+    return rc;
 }
 
 } // namespace nicx::core
